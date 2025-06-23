@@ -299,6 +299,19 @@ services:
       - configSrv2
       - configSrv3
 
+  redis:
+    image: "redis:latest"
+    container_name: redis
+    ports:
+      - "6379"
+    volumes:
+      - redis_data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+    networks:
+      app-network:
+        ipv4_address: 173.17.1.2
+
   pymongo_api:
     container_name: pymongo_api
     build: 
@@ -308,10 +321,12 @@ services:
     depends_on:
       - mongos_router1
       - mongos_router2
+      - redis
     ports:
       - 8080:8080
     environment:
       MONGODB_URL: "mongodb://mongos_router1:27020"
+      REDIS_URL: "redis://redis:6379"
       MONGODB_DATABASE_NAME: "somedb"
     networks:
       - app-network
@@ -334,4 +349,5 @@ volumes:
   shard2_1_data:
   shard2_2_data:
   shard2_3_data:
+  redis_data: { }
 
